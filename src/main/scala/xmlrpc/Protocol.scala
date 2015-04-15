@@ -44,6 +44,7 @@ trait Protocol extends ProtocolSpec with Helpers {
   import Deserializer.StringToError
 
   // TODO Write messages if implicits are not found
+
   def toXmlrpc[T](datatype: T)(implicit serializer: Serializer[T]): NodeSeq =
     serializer.serialize(datatype)
 
@@ -51,12 +52,15 @@ trait Protocol extends ProtocolSpec with Helpers {
     deserializer.deserialize(value)
 
   def readXmlResponse[T: Datatype](xml: NodeSeq): Deserialized[T] =
-    trim(xml \\ "methodResponse" head) match {
+    trim((xml \\ "methodResponse" headOption).getOrElse(<error/>)) match {
+
       case <methodResponse>{fault}</methodResponse> if fault.label == "fault" =>
         Fault((fault \\ "int").text.toInt, (fault \\ "string").text).failureNel
 
       case <methodResponse>{params}</methodResponse> if params.label == "params" =>
-        fromXmlrpc[T](params \ "param" \ "value")
+        fromXmlrpc[T](params \ "param")
+
+      case <error/> => s"methodResponse tag expected in $xml".toError.failureNel
 
       case _ => s"Body of response with params or fault couldn't be parsed. Expected methodResponse structure.\n$xml".toError.failureNel
     }

@@ -39,51 +39,22 @@ class XmlrpcSpec extends FunSpec {
     }
 
     it("should serialize arrays") {
-      val primes = Vector(2, 3, 5, 7, 11, 13)
+      val primes: Seq[Int] = Vector(2, 3, 5, 7, 11, 13)
 
       assert(
-        writeXmlRequest[Seq[Int]]("getSum", Some(primes)) ===
-        <methodCall>
-          <methodName>{"getSum"}</methodName>
-          <params>
-            <param>
-              <array><data>
-                <value><int>{primes.head}</int></value>
-                <value><int>{primes(1)}</int></value>
-                <value><int>{primes(2)}</int></value>
-                <value><int>{primes(3)}</int></value>
-                <value><int>{primes(4)}</int></value>
-                <value><int>{primes.last}</int></value>
-              </data></array>
-            </param>
-          </params>
-        </methodCall>
+        primes ===
+          readXmlResponse[Seq[Int]](
+            writeXmlRequest[Seq[Int]]("getSum", Some(primes)).asResponse
+          ).toOption.get
       )
     }
 
-    it("should serialize structs") {
+    it("should serialize and deserialize structs") {
       val bounds = Map("lowerBound" -> 18, "upperBound" -> 139)
-      val methodName = "setBounds"
 
       assert(
-        writeXmlRequest[Map[String, Int]](methodName, Some(bounds)) ===
-        <methodCall>
-          <methodName>{methodName}</methodName>
-          <params>
-            <param>
-              <struct>
-                <member>
-                  <name>{"lowerBound"}</name>
-                  <value><int>{bounds.get("lowerBound").get}</int></value>
-                </member>
-                <member>
-                  <name>{"upperBound"}</name>
-                  <value><int>{bounds.get("upperBound").get}</int></value>
-                </member>
-              </struct>
-            </param>
-          </params>
-        </methodCall>
+        bounds ===
+          readXmlResponse[Map[String, Int]](writeXmlRequest[Map[String, Int]]("setBounds", Some(bounds)).asResponse).toOption.get
       )
     }
 
@@ -112,7 +83,8 @@ class XmlrpcSpec extends FunSpec {
           </methodResponse>
         ).swap.toOption.get.head
       )
-
     }
+
+    it("should support ISO8601 datetime serialization") {}
   }
 }
