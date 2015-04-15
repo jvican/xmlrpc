@@ -34,11 +34,11 @@ class XmlrpcSpec extends FunSpec {
 
       assert(
         SouthDakota ===
-        readXmlResponse[State](writeXmlRequest[State]("getStateInfo", Some(SouthDakota)).asResponse).toOption.get
+          readXmlResponse[State](writeXmlRequest[State]("getStateInfo", Some(SouthDakota)).asResponse).toOption.get
       )
     }
 
-    it("should serialize arrays") {
+    it("should serialize and deserialize arrays") {
       val primes: Seq[Int] = Vector(2, 3, 5, 7, 11, 13)
 
       assert(

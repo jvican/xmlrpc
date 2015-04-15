@@ -16,9 +16,9 @@ trait BasicDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Array[Byte]] =
       from \\ "param" \ "value" headOption match {
-      case Some(<value><base64>{content}</base64></value>) => content.text.getBytes.success
-      case _ => s"Expected base64 structure in $from".toError.failureNel
-    }
+        case Some(<value><base64>{content}</base64></value>) => content.text.getBytes.success
+        case _ => s"Expected base64 structure in $from".toError.failureNel
+      }
   }
 
   implicit object DatetimeXmlrpc extends Datatype[Date] {
@@ -26,14 +26,14 @@ trait BasicDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Date] =
       from \\ "value" headOption match {
-      case Some(<value><dateTime.iso8601>{date}</dateTime.iso8601></value>) =>
-        try {
-          ISO8601Format.parse(date.text).success
-        } catch {
-          case e: Exception => DeserializationError(s"The date ${from.text} has not been parsed correctly", Some(e)).failureNel
-        }
-      case _ => s"Expected datetime structure in $from".toError.failureNel
-    }
+        case Some(<value><dateTime.iso8601>{date}</dateTime.iso8601></value>) =>
+          try {
+            ISO8601Format.parse(date.text).success
+          } catch {
+            case e: Exception => DeserializationError(s"The date ${from.text} has not been parsed correctly", Some(e)).failureNel
+          }
+        case _ => s"Expected datetime structure in $from".toError.failureNel
+      }
   }
 
   implicit object DoubleXmlrpc extends Datatype[Double] {
@@ -41,15 +41,15 @@ trait BasicDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Double] =
       from \\ "value" headOption match {
-      case Some(<value><double>{double}</double></value>) =>
-        try {
-          double.text.toDouble.success
-        } catch {
-          case e: java.lang.NumberFormatException =>
-            DeserializationError(s"The value ${from.text} couldn't be converted to a Double", Some (e) ).failureNel
-        }
-      case _ => "Expected double structure in $from".toError.failureNel
-    }
+        case Some(<value><double>{double}</double></value>) =>
+          try {
+            double.text.toDouble.success
+          } catch {
+            case e: java.lang.NumberFormatException =>
+              DeserializationError(s"The value ${from.text} couldn't be converted to a Double", Some (e) ).failureNel
+          }
+        case _ => "Expected double structure in $from".toError.failureNel
+      }
   }
 
   implicit object IntegerXmlrpc extends Datatype[Int] {
@@ -57,16 +57,16 @@ trait BasicDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Int] =
       from \\ "value" headOption match {
-      case Some(<value><int>{integer}</int></value>) =>
-        try {
-          integer.text.toInt.success
-        } catch {
-          case e: java.lang.NumberFormatException =>
-            DeserializationError(s"The value ${from.text} couldn't be converted to a Int", Some(e)).failureNel
-        }
+        case Some(<value><int>{integer}</int></value>) =>
+          try {
+            integer.text.toInt.success
+          } catch {
+            case e: java.lang.NumberFormatException =>
+              DeserializationError(s"The value ${from.text} couldn't be converted to a Int", Some(e)).failureNel
+          }
 
-      case _ => s"Expected int structure in $from".toError.failureNel
-    }
+        case _ => s"Expected int structure in $from".toError.failureNel
+      }
   }
 
   implicit object LogicalValueXmlrpc extends Datatype[Boolean] {
@@ -74,14 +74,14 @@ trait BasicDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Boolean] =
       from \\ "value" headOption match {
-      case Some(<value><boolean>{logicalValue}</boolean></value>) =>
-        logicalValue.text match {
-          case "1" => true.success
-          case "0" => false.success
-          case _ => "No logical value in boolean structure".toError.failureNel
-        }
-      case _ => s"Expected boolean structure in $from".toError.failureNel
-    }
+        case Some(<value><boolean>{logicalValue}</boolean></value>) =>
+          logicalValue.text match {
+            case "1" => true.success
+            case "0" => false.success
+            case _ => "No logical value in boolean structure".toError.failureNel
+          }
+        case _ => s"Expected boolean structure in $from".toError.failureNel
+      }
   }
 
   implicit object StringXmlrpc extends Datatype[String] {
@@ -111,12 +111,12 @@ trait CollectionDatatypes extends Protocol {
 
     override def deserialize(from: NodeSeq): Deserialized[Seq[T]] =
       from \\ "array" headOption match {
-      case Some(<array><data>{array @ _*}</data></array>) =>
-        (for { value <- array}
-          yield fromXmlrpc[T](value)).toList.sequence[Deserialized, T]
+        case Some(<array><data>{array @ _*}</data></array>) =>
+          (for { value <- array}
+            yield fromXmlrpc[T](value)).toList.sequence[Deserialized, T]
 
-      case _ => "Expected array structure in $from".toError.failureNel
-    }
+        case _ => "Expected array structure in $from".toError.failureNel
+      }
   }
 
   implicit def StructXmlrpc[T: Datatype]: Datatype[Map[String, T]] = new Datatype[Map[String, T]] {
@@ -142,5 +142,5 @@ trait CollectionDatatypes extends Protocol {
 
         case _ => s"Expected struct in:\n$from".toError.failureNel
       }
-    }
+  }
 }
