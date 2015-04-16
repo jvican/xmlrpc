@@ -1,5 +1,7 @@
 package xmlrpc
 
+import java.util.Date
+
 import org.scalatest.FunSpec
 import xmlrpc.Deserializer.Fault
 
@@ -85,6 +87,13 @@ class XmlrpcSpec extends FunSpec {
       )
     }
 
-    it("should support ISO8601 datetime serialization") {}
+    it("should support ISO8601 datetime serialization") {
+      val currentDate = new Date()
+
+      assert(
+        withoutMillis(currentDate) ===
+          readXmlResponse[Date](writeXmlRequest[Date]("getSetDate", Some(currentDate)).asResponse).toOption.get
+      )
+    }
   }
 }

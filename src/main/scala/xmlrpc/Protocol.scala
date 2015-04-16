@@ -4,8 +4,8 @@ package xmlrpc
 import xmlrpc.Deserializer.{Deserialized, Fault}
 
 import scala.language.{implicitConversions, postfixOps}
-import scala.xml._
 import scala.xml.Utility.trim
+import scala.xml._
 import scalaz.Scalaz._
 import scalaz.ValidationNel
 
@@ -40,7 +40,7 @@ trait Serializer[T] {
 
 trait Datatype[T] extends Serializer[T] with Deserializer[T]
 
-trait Protocol extends ProtocolSpec with Helpers {
+trait Protocol extends DatetimeSpec with Helpers {
   import Deserializer.StringToError
 
   // TODO Write messages if implicits are not found
@@ -55,7 +55,12 @@ trait Protocol extends ProtocolSpec with Helpers {
     trim((xml \\ "methodResponse" headOption).getOrElse(<error/>)) match {
 
       case <methodResponse>{fault}</methodResponse> if fault.label == "fault" =>
-        Fault((fault \\ "int").text.toInt, (fault \\ "string").text).failureNel
+        (fault \\ "int" headOption, fault \\ "string" headOption) match {
+          case (Some(intValue), Some(stringValue)) =>
+            Fault(intValue.text.toInt, stringValue.text).failureNel
+
+          case _ => s"fault structure with faultCode and faultString not found".toError.failureNel
+        }
 
       case <methodResponse>{params}</methodResponse> if params.label == "params" =>
         fromXmlrpc[T](params \ "param")

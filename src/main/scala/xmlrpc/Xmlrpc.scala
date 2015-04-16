@@ -25,12 +25,17 @@ object Xmlrpc {
     def uri: Uri = Uri(fullAddress)
   }
 
-  def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: P)
-                                            (implicit xmlrpcServer: Uri, rf: ActorRefFactory, ec: ExecutionContext, fc: Timeout): Future[Deserialized[R]] =
+  def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: P)(implicit xmlrpcServer: Uri,
+                                                                            rf: ActorRefFactory,
+                                                                            ec: ExecutionContext,
+                                                                            fc: Timeout): Future[Deserialized[R]] =
     invokeMethod(name, Some(parameters))
 
   def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: Option[P] = None)
-                                                      (implicit xmlrpcServer: Uri, rf: ActorRefFactory, ec: ExecutionContext, fc: Timeout): Future[Deserialized[R]] = {
+                                              (implicit xmlrpcServer: Uri,
+                                               rf: ActorRefFactory,
+                                               ec: ExecutionContext,
+                                               fc: Timeout): Future[Deserialized[R]] = {
 
     val request: NodeSeq = writeXmlRequest(name, parameters)
 
