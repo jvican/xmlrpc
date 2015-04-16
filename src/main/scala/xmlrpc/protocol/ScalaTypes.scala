@@ -1,6 +1,6 @@
-package xmlrpc
+package xmlrpc.protocol
 
-import xmlrpc.Deserializer.Deserialized
+import xmlrpc.protocol.Deserializer.Deserialized
 
 import scala.xml.NodeSeq
 import scalaz.Scalaz._

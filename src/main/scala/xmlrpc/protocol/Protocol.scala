@@ -1,31 +1,35 @@
-package xmlrpc
+package xmlrpc.protocol
 
-
-import xmlrpc.Deserializer.{Deserialized, Fault}
+import xmlrpc.protocol.Deserializer.{Fault, Deserialized}
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.xml.Utility.trim
 import scala.xml._
 import scalaz.Scalaz._
-import scalaz.ValidationNel
+import scalaz.{NonEmptyList, Validation}
 
 trait Deserializer[T] {
   import Deserializer.Deserialized
   def deserialize(from: NodeSeq): Deserialized[T]
 }
 
+trait AnyError { val friendlyMessage: String }
+
 object Deserializer {
-  type Deserialized[T] = ValidationNel[Error, T]
+  // This is, actually, validationNel
+  type Deserialized[T] = Validation[AnyErrors, T]
 
-  trait Error { val friendlyMessage: String }
+  type AnyErrors = NonEmptyList[AnyError]
 
-  case class DeserializationError(reason: String, throwable: Option[Throwable] = None) extends Error {
+  trait XmlrpcError extends AnyError
+
+  case class DeserializationError(reason: String, throwable: Option[Throwable] = None) extends XmlrpcError {
     override val friendlyMessage: String = s"A deserialization error has occurred: \n$reason\n" +
       s"Exception: \n\t${throwable.getOrElse("Unknown")}"
   }
 
   // This is a fault from the server, it means an error in the server side with information about why
-  case class Fault(code: Int, reason: String) extends Error {
+  case class Fault(code: Int, reason: String) extends XmlrpcError {
     override val friendlyMessage = s"Fault response from the server: $reason with code $code\n"
   }
 

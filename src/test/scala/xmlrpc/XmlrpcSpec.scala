@@ -3,7 +3,8 @@ package xmlrpc
 import java.util.Date
 
 import org.scalatest.FunSpec
-import xmlrpc.Deserializer.Fault
+import xmlrpc.protocol.{XmlrpcProtocol, Datatype, Deserializer}
+import Deserializer.Fault
 
 import scala.xml.Node
 

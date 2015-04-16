@@ -1,8 +1,8 @@
-package xmlrpc
+package xmlrpc.protocol
 
 import java.util.Date
 
-import xmlrpc.Deserializer.{DeserializationError, Deserialized}
+import xmlrpc.protocol.Deserializer.{DeserializationError, Deserialized}
 
 import scala.language.postfixOps
 import scala.xml.{Node, NodeSeq}

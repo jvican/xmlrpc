@@ -1,7 +1,7 @@
-package xmlrpc
+package xmlrpc.protocol
 
 import java.text.SimpleDateFormat
-import java.util.{TimeZone, Date}
+import java.util.{Date, TimeZone}
 
 trait DatetimeSpec {
   /**

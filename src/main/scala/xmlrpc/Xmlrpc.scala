@@ -5,7 +5,8 @@ import akka.util.Timeout
 import spray.client.pipelining._
 import spray.http.MediaTypes._
 import spray.http.{HttpEntity, Uri}
-import xmlrpc.Deserializer.Deserialized
+import xmlrpc.protocol.{XmlrpcProtocol, Datatype, Deserializer}
+import Deserializer.Deserialized
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
