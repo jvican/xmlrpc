@@ -3,7 +3,8 @@ package xmlrpc
 import akka.actor.ActorRefFactory
 import akka.util.Timeout
 import spray.client.pipelining._
-import spray.http.Uri
+import spray.http.MediaTypes._
+import spray.http.{HttpEntity, Uri}
 import xmlrpc.Deserializer.Deserialized
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,11 +40,14 @@ object Xmlrpc {
 
     val request: NodeSeq = writeXmlRequest(name, parameters)
 
-    import spray.httpx.marshalling.BasicMarshallers.NodeSeqMarshaller
     import spray.httpx.unmarshalling.BasicUnmarshallers.NodeSeqUnmarshaller
 
     val pipeline = sendReceive ~> unmarshal[NodeSeq]
 
-    pipeline(Post(xmlrpcServer, request)).map(xml => readXmlResponse[R](xml))
+    // As scala-xml doesn't support xml tags, because it is a reserved keyword, xlm is converted
+    // to a String and then the standard xml header is added
+    val requestWithHeader: String = <?xml version="1.0"?> + request.toString
+
+    pipeline(Post(xmlrpcServer, HttpEntity(`text/xml`, requestWithHeader))).map(xml => readXmlResponse[R](xml))
   }
 }
