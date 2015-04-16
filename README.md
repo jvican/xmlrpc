@@ -1,4 +1,5 @@
-# Xmlrpc for Scala
+
+# Xmlrpc for Scala [![Build Status](https://travis-ci.org/jvican/xmlrpc.svg?branch=master)](https://travis-ci.org/jvican/xmlrpc)
 This is a Scala library to talk to servers via [XML-RPC](https://en.wikipedia.org/wiki/XML-RPC), originally created to connect to my university servers.This implementation is compliant with the [specification](http://xmlrpc.scripting.com/spec.html).
 
 # What is XML-RPC?
@@ -13,4 +14,4 @@ It solves the problem of serializing and deserializing Scala types in a fancy wa
 To be completed...
 
 # Problems
-At this moment, the only element that is not avalaible to use directly is an Array of arbitrary types. In case this is needed, it's better to use a case class if possible.
+At this moment, the only element that is not available to use directly is an Array of arbitrary types. In case this is needed, it's better to use a case class if possible.

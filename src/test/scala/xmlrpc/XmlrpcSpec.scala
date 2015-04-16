@@ -95,5 +95,40 @@ class XmlrpcSpec extends FunSpec {
           readXmlResponse[Date](writeXmlRequest[Date]("getSetDate", Some(currentDate)).asResponse).toOption.get
       )
     }
+
+    it("should support <i4> xml tag inside a value") {
+      val number = 14
+      val responseWithI4 =
+        <methodResponse>
+          <params>
+            <param>
+              <value><i4>{number}</i4></value>
+            </param>
+          </params>
+        </methodResponse>
+
+      assert(
+        number ===
+          readXmlResponse[Int](responseWithI4).toOption.get
+      )
+    }
+
+    it("should support empty xml tag, representing a string, inside a value") {
+      val message = "Hello World!"
+
+      val responseWithEmptyTag =
+        <methodResponse>
+          <params>
+            <param>
+              <value>{message}</value>
+            </param>
+          </params>
+        </methodResponse>
+
+      assert(
+        message ===
+          readXmlResponse[String](responseWithEmptyTag).toOption.get
+      )
+    }
   }
 }
