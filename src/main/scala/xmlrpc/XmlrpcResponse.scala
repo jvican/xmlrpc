@@ -1,9 +1,12 @@
 package xmlrpc
 
-import xmlrpc.protocol.Deserializer
+import xmlrpc.protocol.{Datatype, Deserializer}
+import xmlrpc.protocol.XmlrpcProtocol.readXmlResponse
 import Deserializer.{AnyErrors, Deserialized}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.implicitConversions
+import scala.xml.NodeSeq
 import scalaz.Scalaz._
 
 case class XmlrpcResponse[R](underlying: Future[Deserialized[R]])(implicit ec: ExecutionContext) {
@@ -24,5 +27,9 @@ case class XmlrpcResponse[R](underlying: Future[Deserialized[R]])(implicit ec: E
 object XmlrpcResponse {
   def apply[R](value: R)(implicit ec: ExecutionContext): XmlrpcResponse[R] = XmlrpcResponse[R] {
     Future.successful(value.success)
+  }
+
+  implicit class SprayToXmlrpcResponse(underlying: Future[NodeSeq])(implicit ec: ExecutionContext) {
+    def asXmlrpcResponse[R: Datatype]: XmlrpcResponse[R] = XmlrpcResponse[R](underlying map readXmlResponse[R])
   }
 }

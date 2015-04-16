@@ -5,10 +5,9 @@ import akka.util.Timeout
 import spray.client.pipelining._
 import spray.http.MediaTypes._
 import spray.http.{HttpEntity, Uri}
-import xmlrpc.protocol.{XmlrpcProtocol, Datatype, Deserializer}
-import Deserializer.Deserialized
+import xmlrpc.protocol.{Datatype, XmlrpcProtocol}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.xml.NodeSeq
 
 /**
@@ -30,25 +29,26 @@ object Xmlrpc {
   def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: P)(implicit xmlrpcServer: Uri,
                                                                             rf: ActorRefFactory,
                                                                             ec: ExecutionContext,
-                                                                            fc: Timeout): Future[Deserialized[R]] =
+                                                                            fc: Timeout): XmlrpcResponse[R] =
     invokeMethod(name, Some(parameters))
 
   def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: Option[P] = None)
                                               (implicit xmlrpcServer: Uri,
                                                rf: ActorRefFactory,
                                                ec: ExecutionContext,
-                                               fc: Timeout): Future[Deserialized[R]] = {
+                                               fc: Timeout): XmlrpcResponse[R] = {
 
     val request: NodeSeq = writeXmlRequest(name, parameters)
 
+    import XmlrpcResponse.SprayToXmlrpcResponse
     import spray.httpx.unmarshalling.BasicUnmarshallers.NodeSeqUnmarshaller
 
     val pipeline = sendReceive ~> unmarshal[NodeSeq]
 
-    // As scala-xml doesn't support xml tags, because it is a reserved keyword, xlm is converted
-    // to a String and then the standard xml header is added
+    /** As scala-xml doesn't support xml tags (it is a reserved keyword), xml is converted
+      * to a String and then the standard xml header is added */
     val requestWithHeader: String = <?xml version="1.0"?> + request.toString
 
-    pipeline(Post(xmlrpcServer, HttpEntity(`text/xml`, requestWithHeader))).map(xml => readXmlResponse[R](xml))
+    pipeline(Post(xmlrpcServer, HttpEntity(`text/xml`, requestWithHeader))).asXmlrpcResponse[R]
   }
 }
