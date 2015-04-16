@@ -1,7 +1,7 @@
 package xmlrpc
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{TimeZone, Date}
 
 trait DatetimeSpec {
   /**
@@ -9,9 +9,11 @@ trait DatetimeSpec {
    * information. Specification in [[http://en.wikipedia.org/wiki/XML-RPC]].
    */
   val ISO8601Format = new SimpleDateFormat("yyyyMMdd'T'HH:mm:ss")
+  val serverTimezone = TimeZone.getDefault
+  ISO8601Format.setTimeZone(serverTimezone)
   ISO8601Format.setLenient(false)
 
-  //def toServerTimezone(date: Date)(implicit timezone: TimeZone = TimeZone.getDefault) =
+
   def withoutMillis(date: Date): Date = {
     val dateTime = date.getTime
     new Date(dateTime - (dateTime % 1000))

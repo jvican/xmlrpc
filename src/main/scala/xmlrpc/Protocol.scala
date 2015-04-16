@@ -19,9 +19,9 @@ object Deserializer {
 
   trait Error { val friendlyMessage: String }
 
-  case class DeserializationError(reason: String, exception: Option[Exception] = None) extends Error {
+  case class DeserializationError(reason: String, throwable: Option[Throwable] = None) extends Error {
     override val friendlyMessage: String = s"A deserialization error has occurred: \n$reason\n" +
-      s"Exception: \n\t${exception.getOrElse("Unknown")}"
+      s"Exception: \n\t${throwable.getOrElse("Unknown")}"
   }
 
   // This is a fault from the server, it means an error in the server side with information about why

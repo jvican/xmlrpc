@@ -1,7 +1,12 @@
 package xmlrpc
 
+import xmlrpc.Deserializer.{DeserializationError, Deserialized}
+
+import scala.reflect.ClassTag
+import scala.util.{Success, Failure, Try}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 import scala.xml.{Elem, Node, NodeSeq}
+import scalaz.Scalaz._
 
 trait Helpers {
   implicit class PimpedNode(node: NodeSeq) {
@@ -23,4 +28,11 @@ trait Helpers {
   implicit class RequestTransformer(request: Node) {
     val asResponse: Node = ToResponse(request)
   }
+
+  def makeNumericConversion[T : Datatype : ClassTag](f: String => T, input: String): Deserialized[T] =
+    Try(f(input)) match {
+      case Success(convertedValue) => convertedValue.success
+      case Failure(e) =>
+        DeserializationError(s"The value $input couldn't be converted to a ${implicitly[ClassTag[T]].runtimeClass.getSimpleName}", Some(e)).failureNel
+    }
 }

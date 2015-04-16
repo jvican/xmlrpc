@@ -42,12 +42,8 @@ trait BasicDatatypes extends Protocol {
     override def deserialize(from: NodeSeq): Deserialized[Double] =
       from \\ "value" headOption match {
         case Some(<value><double>{double}</double></value>) =>
-          try {
-            double.text.toDouble.success
-          } catch {
-            case e: java.lang.NumberFormatException =>
-              DeserializationError(s"The value ${from.text} couldn't be converted to a Double", Some (e) ).failureNel
-          }
+          makeNumericConversion(_.toDouble, double.text)
+
         case _ => "Expected double structure in $from".toError.failureNel
       }
   }
@@ -58,12 +54,10 @@ trait BasicDatatypes extends Protocol {
     override def deserialize(from: NodeSeq): Deserialized[Int] =
       from \\ "value" headOption match {
         case Some(<value><int>{integer}</int></value>) =>
-          try {
-            integer.text.toInt.success
-          } catch {
-            case e: java.lang.NumberFormatException =>
-              DeserializationError(s"The value ${from.text} couldn't be converted to a Int", Some(e)).failureNel
-          }
+          makeNumericConversion(_.toInt, integer.text)
+
+        case Some(<value><i4>{integer}</i4></value>) =>
+          makeNumericConversion(_.toInt, integer.text)
 
         case _ => s"Expected int structure in $from".toError.failureNel
       }
@@ -90,13 +84,16 @@ trait BasicDatatypes extends Protocol {
     override def deserialize(from: NodeSeq): Deserialized[String] =
       from \\ "value" headOption match {
         case Some(<value><string>{content}</string></value>) => content.text.success
+        case Some(<value>{content}</value>) => content.text.success
         case _ => s"Expected string structure in $from".toError.failureNel
       }
   }
 
-  implicit object Nil extends Datatype[Null] {
-    override def serialize(value: Null): Node = <nil/>.inValue
-    override def deserialize(from: NodeSeq): Deserialized[Null] = ???
+  object Null
+
+  implicit object Nil extends Datatype[Null.type] {
+    override def serialize(value: Null.type): Node = <nil/>.inValue
+    override def deserialize(from: NodeSeq): Deserialized[Null.type] = Null.success
   }
 }
 
