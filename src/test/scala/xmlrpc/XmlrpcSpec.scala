@@ -131,5 +131,34 @@ class XmlrpcSpec extends FunSpec {
           readXmlResponse[String](responseWithEmptyTag).toOption.get
       )
     }
+
+    it("should support void methodResponses") {
+      assert(
+        Void ===
+          readXmlResponse[Void.type](
+            <methodResponse>
+              <params>
+              </params>
+            </methodResponse>
+          ).toOption.get
+      )
+    }
+
+    it("should support null represented with <nil/>") {
+      import scala.xml.Null
+
+      assert(
+        Null ===
+          readXmlResponse[Null.type](
+            <methodResponse>
+              <params>
+                <param>
+                  <value><nil/></value>
+                </param>
+              </params>
+            </methodResponse>
+          ).toOption.get
+      )
+    }
   }
 }
