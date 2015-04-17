@@ -97,20 +97,39 @@ class XmlrpcSpec extends FunSpec {
       )
     }
 
+    it("should serialize and deserialize boolean") {
+      val message = true
+
+      assert(
+        true ===
+          readXmlResponse[Boolean](writeXmlRequest[Boolean]("sendBoolean", Some(message)).asResponse).toOption.get
+      )
+    }
+
+    it("should serialize and deserialize base64") {
+      val encodedMessage = "eW91IGNhbid0IHJlYWQgdGhpcyE=".getBytes
+
+      assert(
+        encodedMessage ===
+          readXmlResponse[Array[Byte]](writeXmlRequest[Array[Byte]]("sendBoolean", Some(encodedMessage)).asResponse).toOption.get
+
+      )
+    }
+
     it("should support <i4> xml tag inside a value") {
       val number = 14
-      val responseWithI4 =
-        <methodResponse>
-          <params>
-            <param>
-              <value><i4>{number}</i4></value>
-            </param>
-          </params>
-        </methodResponse>
 
       assert(
         number ===
-          readXmlResponse[Int](responseWithI4).toOption.get
+          readXmlResponse[Int](
+            <methodResponse>
+              <params>
+                <param>
+                  <value><i4>{number}</i4></value>
+                </param>
+              </params>
+            </methodResponse>
+          ).toOption.get
       )
     }
 

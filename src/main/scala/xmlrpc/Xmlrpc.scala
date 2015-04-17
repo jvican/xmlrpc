@@ -47,7 +47,7 @@ object Xmlrpc {
 
     /** As scala-xml doesn't support xml tags (it is a reserved keyword), xml is converted
       * to a String and then the standard xml header is added */
-    val requestWithHeader: String = <?xml version="1.0"?> + request.toString
+    val requestWithHeader: String = """<?xml version="1.0"?>""" + request.toString
 
     pipeline(Post(xmlrpcServer, HttpEntity(`text/xml`, requestWithHeader))).asXmlrpcResponse[R]
   }

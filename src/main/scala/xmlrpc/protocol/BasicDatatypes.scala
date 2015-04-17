@@ -12,7 +12,7 @@ trait BasicDatatypes extends Protocol {
   import Deserializer.StringToError
 
   implicit object Base64Xmlrpc extends Datatype[Array[Byte]] {
-    override def serialize(value: Array[Byte]): Node = <base64>{value.mkString}</base64>.inValue
+    override def serialize(value: Array[Byte]): Node = <base64>{value.map(_.toChar).mkString}</base64>.inValue
 
     override def deserialize(from: NodeSeq): Deserialized[Array[Byte]] =
       from \\ "param" \ "value" headOption match {
