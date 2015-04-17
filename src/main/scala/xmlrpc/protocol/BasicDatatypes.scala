@@ -79,14 +79,23 @@ trait BasicDatatypes extends Protocol {
   }
 
   implicit object StringXmlrpc extends Datatype[String] {
-    override def serialize(value: String): Node = <string>{value}</string>.inValue
+    override def serialize(value: String): Node = {
+      def encodeSpecialCharacters(content: String) =
+        content.replace("&", "&amp").replace("<", "&lt")
 
-    override def deserialize(from: NodeSeq): Deserialized[String] =
+      <string>{encodeSpecialCharacters(value)}</string>.inValue
+    }
+
+    override def deserialize(from: NodeSeq): Deserialized[String] = {
+      def decodeSpecialCharacters(content: String) =
+        content.replace("&amp", "&").replace("&lt", "<")
+
       from \\ "value" headOption match {
-        case Some(<value><string>{content}</string></value>) => content.text.success
-        case Some(<value>{content}</value>) => content.text.success
+        case Some(<value><string>{content}</string></value>) => decodeSpecialCharacters(content.text).success
+        case Some(<value>{content}</value>) => decodeSpecialCharacters(content.text).success
         case _ => s"Expected string structure in $from".toError.failureNel
       }
+    }
   }
   
   object Void

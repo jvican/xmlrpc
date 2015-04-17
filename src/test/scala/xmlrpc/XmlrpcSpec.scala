@@ -160,5 +160,22 @@ class XmlrpcSpec extends FunSpec {
           ).toOption.get
       )
     }
+
+    it("should detect special characters in <string> and encode/decode them") {
+      val message = "George & Bernard have < than you"
+
+      assert(
+        message ===
+          readXmlResponse[String](
+            <methodResponse>
+              <params>
+                <param>
+                  <value><string>{"George &amp Bernard have &lt than you"}</string></value>
+                </param>
+              </params>
+            </methodResponse>
+          ).toOption.get
+      )
+    }
   }
 }
