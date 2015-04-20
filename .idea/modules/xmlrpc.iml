@@ -39,5 +39,6 @@
     <orderEntry type="library" name="SBT: org.scalaz:scalaz-core_2.11:7.1.1:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.11.2:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:2.2.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.chuusai:shapeless_2.11:2.2.0-RC4:jar" level="project" />
   </component>
 </module>

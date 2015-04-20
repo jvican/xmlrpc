@@ -3,8 +3,8 @@ package xmlrpc
 import java.util.Date
 
 import org.scalatest.FunSpec
-import xmlrpc.protocol.{XmlrpcProtocol, Datatype, Deserializer}
-import Deserializer.Fault
+import xmlrpc.protocol.Deserializer.Fault
+import xmlrpc.protocol.XmlrpcProtocol
 
 import scala.xml.Node
 
@@ -29,15 +29,22 @@ class XmlrpcSpec extends FunSpec {
       assert(created === request)
     }
 
-    it("should serialize and deserialize case classes") {
+    it("should serialize and deserialize case classes of any arity") {
       case class State(name: String, population: Double)
       val SouthDakota = State("South Dakota", 835.175)
-
-      implicit val ExampleXmlrpc: Datatype[State] = asProduct2(State.apply)(State.unapply(_).get)
 
       assert(
         SouthDakota ===
           readXmlResponse[State](writeXmlRequest[State]("getStateInfo", Some(SouthDakota)).asResponse).toOption.get
+      )
+    }
+
+    it("should serialize and deserialize tuples of 1 to 22 elements") {
+      val tuple = (1, 2, 3, 4)
+
+      assert(
+        tuple ===
+          readXmlResponse[(Int, Int, Int, Int)](writeXmlRequest[(Int, Int, Int, Int)]("setTuple", Some(tuple)).asResponse).toOption.get
       )
     }
 
@@ -63,8 +70,6 @@ class XmlrpcSpec extends FunSpec {
 
     it("should deserialize a fault error from the server") {
       case class NonExistingResponse(a: Int)
-      implicit val NonExistingResponseFormat: Datatype[NonExistingResponse] =
-        asProduct1(NonExistingResponse.apply)(NonExistingResponse.unapply(_).get)
 
       assert(Fault(4, "Too many parameters.") ===
         readXmlResponse[NonExistingResponse](
@@ -85,6 +90,15 @@ class XmlrpcSpec extends FunSpec {
             </fault>
           </methodResponse>
         ).swap.toOption.get.head
+      )
+    }
+
+    it("should support the option type from the standard Scala library") {
+      val option = Some("Hello world")
+
+      assert(
+        option ===
+          readXmlResponse[Option[String]](writeXmlRequest[Option[String]]("setPossibleGreeting", Some(option)).asResponse).toOption.get
       )
     }
 

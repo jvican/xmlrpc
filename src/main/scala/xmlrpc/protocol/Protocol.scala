@@ -89,6 +89,8 @@ trait Protocol extends DatetimeSpec with Helpers {
 }
 
 object XmlrpcProtocol extends Protocol
-                          with BasicDatatypes
-                          with CollectionDatatypes
+                          with BasicTypes
+                          with CollectionTypes
                           with ScalaTypes
+                          with GenericTypes
+                          with ShapelessTypes
