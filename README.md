@@ -1,18 +1,28 @@
 
 # Xmlrpc for Scala [![Build Status](https://travis-ci.org/jvican/xmlrpc.svg?branch=master)](https://travis-ci.org/jvican/xmlrpc)
-This is a Scala library to talk to servers via [XML-RPC](https://en.wikipedia.org/wiki/XML-RPC), originally created to connect to my university servers.This implementation is compliant with the [specification](http://xmlrpc.scripting.com/spec.html).
+This is a Scala library to talk to servers and clients via [XML-RPC](https://en.wikipedia.org/wiki/XML-RPC), originally created to connect to my university servers. This implementation is compliant with the [specification](http://xmlrpc.scripting.com/spec.html).
 
 # What is XML-RPC?
-As said in the specification:
+Chances are, that if you are reading this, you already know what XML-RPC is. But, for the sake of completeness, here it is the definition from the specification:
 > XML-RPC is a Remote Procedure Calling protocol that works over the Internet. An XML-RPC message is an HTTP-POST request. The body of the request is in XML. A procedure executes on the server and the value it returns is also formatted in XML.
+
+Despite that more powerful and modern rpc protocols are used nowadays, I have written this to support connection to older servers.
+
+# Dependencies
+This library uses [Spray](https://github.com/spray/spray) to connect to any HTTP server. It would be easy to change that if one wants to use another library like [Dispatch](https://github.com/dispatch/dispatch). You are free to fork this project and make the necesssary changes in _Xmlrpc.scala_, located in the main package. 
   
-This library uses [Spray](https://github.com/spray/spray) to connect to any HTTP server and with the help of Scalaz, it has good feedback in case of any failure.
+Thanks to Scalaz, it offers good feedback in case of any failure with the help of __Validation[T]__. Validation is _applicative_, this means that all the errors in the process of deserialization will be accumulated.
+
+Using [Shapeless](https://github.com/milessabin/shapeless), we solve the problem of writing boilerplate code for any arity of case classes and tuples. If you are more interested in a library for serialization using Shapeless, you can check [PicoPickle](https://github.com/netvl/picopickle), an extensible, more powerful library entirely written in Shapeless.
+
+# Import to your project
+_To do_
 
 # What does this solve?
-It solves the problem of serializing and deserializing Scala types in a fancy way. Moreover, it does so simpler than other libraries, using the power of _type classes_ and _implicits_. This technique was proposed by _David McIver_ in [sbinary](https://github.com/harrah/sbinary) and it's very powerful, being used broadly in json and xml libraries.
+It solves the problem of serializing and deserializing types in a fancy way. Moreover, it does so simpler than other libraries, using the power of _type classes_ and _implicits_. This technique was proposed by _David McIver_ in [sbinary](https://github.com/harrah/sbinary) and it's very powerful, being used broadly in json and xml libraries.
 
 # Usage
-A tiny example using _case classes_. _Tuples_, _Option[T]_ and roughly any standard type can be used to read and write XML-RPC messages. This example only shows the serialization and deserialization but not the invokeMethod that can be used importing __xmlrpc.Xmlrpc__ (usage example in the future).
+A tiny example using _case classes_. _Tuples_, _Option[T]_ and roughly any standard type can be used to read and write XML-RPC messages (if not, please let me know). This example only shows the serialization and deserialization but not the use of __invokeMethod__, the main method of the library to connect to any server, that can be used importing __xmlrpc.Xmlrpc__ (usage example in the future).
 ```scala
 import xmlrpc.protocol.XmlrpcProtocol._
 
@@ -40,4 +50,4 @@ readXmlResponse[Confirmation](<methodResponse>
 ```
 
 # Issues
-At this moment, the only element that is not available to use directly is an Array of arbitrary types. In case this is needed, it's better to use a case class if possible.
+At this moment, it's not possible to serialize and deserialize __Seq[Any]__. For example, you cannot serialize `List("a", 1)`. In case you need this, it's better to use case classes if the appearances of these types are cyclic, e.g. `List("a", 1, "a", 1)`. When I have more time, I would include this functionality in the library.
