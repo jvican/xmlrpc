@@ -16,7 +16,12 @@ Thanks to Scalaz, it offers good feedback in case of any failure with the help o
 Using [Shapeless](https://github.com/milessabin/shapeless), we solve the problem of writing boilerplate code for any arity of case classes and tuples. If you are more interested in a library for serialization using Shapeless, you can check [PicoPickle](https://github.com/netvl/picopickle), an extensible, more powerful library entirely written in Shapeless.
 
 # Import to your project
-_To do_
+This project is only compatible with Scala __2.11__+.
+  
+In order to add it to your project, write the following in your build.sbt:
+```scala
+libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % xmlrpcVersion)
+```
 
 # What does this solve?
 It solves the problem of serializing and deserializing types in a fancy way. Moreover, it does so simpler than other libraries, using the power of _type classes_ and _implicits_. This technique was proposed by _David McIver_ in [sbinary](https://github.com/harrah/sbinary) and it's very powerful, being used broadly in json and xml libraries.

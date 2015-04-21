@@ -2,13 +2,13 @@ package xmlrpc
 
 import java.util.Date
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.FunSpec
 import xmlrpc.protocol.Deserializer.Fault
 import xmlrpc.protocol.{Datatype, XmlrpcProtocol}
 
-import scala.xml.{NodeSeq, Node}
+import scala.xml.NodeSeq
 
-class XmlrpcSpec extends FunSpec with Matchers {
+class XmlrpcSpec extends FunSpec {
   import XmlrpcProtocol._
   import org.scalatest.StreamlinedXmlEquality._
 
@@ -18,7 +18,7 @@ class XmlrpcSpec extends FunSpec with Matchers {
     }
   }
 
-  def assertRequestIsRead[T: Datatype](expected: T, xml: NodeSeq): Unit = {
+  def assertResponseIsRead[T: Datatype](expected: T, xml: NodeSeq): Unit = {
     assertResult(expected) {
       readXmlResponse[T](xml).toOption.get
     }
@@ -26,9 +26,7 @@ class XmlrpcSpec extends FunSpec with Matchers {
 
   describe("Xmlrpc protocol") {
     it("should create a right xmlrpc request") {
-      val created: Node = writeXmlRequest("examples.getStateName", Some(41))
-
-      val request: Node =
+      val request: NodeSeq =
         <methodCall>
           <methodName>{"examples.getStateName"}</methodName>
           <params>
@@ -38,7 +36,10 @@ class XmlrpcSpec extends FunSpec with Matchers {
           </params>
         </methodCall>
 
-      assert(created === request)
+      assert(
+        request ===
+          writeXmlRequest[Int]("examples.getStateName", Some(41))
+      )
     }
 
     it("should serialize and deserialize case classes of any arity") {
@@ -114,7 +115,7 @@ class XmlrpcSpec extends FunSpec with Matchers {
     it("should support <i4> xml tag inside a value") {
       val number = 14
 
-      assertRequestIsRead(number,
+      assertResponseIsRead(number,
         <methodResponse>
           <params>
             <param>
@@ -128,7 +129,7 @@ class XmlrpcSpec extends FunSpec with Matchers {
     it("should support empty xml tag, representing a string, inside a value") {
       val greeting = "Hello World!"
 
-      assertRequestIsRead(greeting,
+      assertResponseIsRead(greeting,
         <methodResponse>
           <params>
             <param>
@@ -171,7 +172,7 @@ class XmlrpcSpec extends FunSpec with Matchers {
     it("should detect special characters in <string> and encode/decode them") {
       val message = "George & Bernard have < than you"
 
-      assertRequestIsRead(message,
+      assertResponseIsRead(message,
         <methodResponse>
           <params>
             <param>

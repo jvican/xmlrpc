@@ -1,8 +1,14 @@
+import SonatypeKeys._
+
+sonatypeSettings
+
 name := "Xmlrpc"
 
 version := "1.0"
 
-organization := "jvican"
+profileName := "jvican"
+
+organization := "com.github.jvican"
 
 scalaVersion := "2.11.6"
 
@@ -32,20 +38,6 @@ libraryDependencies ++= {
 }
 
 // Settings to publish to Sonatype
-publishMavenStyle := true
-
-publishArtifact in Test := false
-
-pomIncludeRepository := { _ => false }
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
-
 licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/MIT"))
 
 pomExtra := <url>https://github.com/jvican/xmlrpc</url>
