@@ -7,7 +7,12 @@ import scala.xml.NodeSeq
 import scalaz.Scalaz._
 
 trait ShapelessTypes extends Protocol {
-  // Both serialize and deserialize methods are recursive
+  /**
+   * This is the support for HList serialization/deserialization. HNil is the equivalent
+   * to Nil in the standard Scala List and the same for HCons. hcons's serialize and deserialize
+   * methods use a recursive strategy.
+   */
+
   implicit def hconsXmlrpc[T, H <: HList](implicit hd: Lazy[Datatype[H]], td: Lazy[Datatype[T]]): Datatype[T :: H] = new Datatype[T :: H] {
     override def serialize(value: T :: H): NodeSeq = value match {
       case t :: h => td.value.serialize(t) ++ hd.value.serialize(h)
