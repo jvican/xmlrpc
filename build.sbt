@@ -30,3 +30,33 @@ libraryDependencies ++= {
     "com.chuusai"       %% "shapeless"      % shapelessVersion
   )
 }
+
+// Settings to publish to Sonatype
+publishMavenStyle := true
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+
+licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/MIT"))
+
+pomExtra := <url>https://github.com/jvican/xmlrpc</url>
+  <scm>
+    <url>https://github.com/jvican/xmlrpc.git</url>
+    <connection>scm:git:git@github.com:jvican/xmlrpc.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>jvican</id>
+      <name>Jorge Vicente Cantero</name>
+      <url>https://github.com/jvican</url>
+    </developer>
+  </developers>

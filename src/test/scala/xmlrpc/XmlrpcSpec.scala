@@ -2,15 +2,27 @@ package xmlrpc
 
 import java.util.Date
 
-import org.scalatest.FunSpec
+import org.scalatest.{FunSpec, Matchers}
 import xmlrpc.protocol.Deserializer.Fault
-import xmlrpc.protocol.XmlrpcProtocol
+import xmlrpc.protocol.{Datatype, XmlrpcProtocol}
 
-import scala.xml.Node
+import scala.xml.{NodeSeq, Node}
 
-class XmlrpcSpec extends FunSpec {
+class XmlrpcSpec extends FunSpec with Matchers {
   import XmlrpcProtocol._
   import org.scalatest.StreamlinedXmlEquality._
+
+  def assertCanBeSerializedAndDeserialized[T: Datatype](value: T): Unit = {
+    assertResult(value) {
+      readXmlResponse[T](writeXmlRequest[T]("testMethod", Some(value)).asResponse).toOption.get
+    }
+  }
+
+  def assertRequestIsRead[T: Datatype](expected: T, xml: NodeSeq): Unit = {
+    assertResult(expected) {
+      readXmlResponse[T](xml).toOption.get
+    }
+  }
 
   describe("Xmlrpc protocol") {
     it("should create a right xmlrpc request") {
@@ -33,39 +45,25 @@ class XmlrpcSpec extends FunSpec {
       case class State(name: String, population: Double)
       val SouthDakota = State("South Dakota", 835.175)
 
-      assert(
-        SouthDakota ===
-          readXmlResponse[State](writeXmlRequest[State]("getStateInfo", Some(SouthDakota)).asResponse).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(SouthDakota)
     }
 
     it("should serialize and deserialize tuples of 1 to 22 elements") {
       val tuple = (1, 2, 3, 4)
 
-      assert(
-        tuple ===
-          readXmlResponse[(Int, Int, Int, Int)](writeXmlRequest[(Int, Int, Int, Int)]("setTuple", Some(tuple)).asResponse).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(tuple)
     }
 
     it("should serialize and deserialize arrays") {
       val primes: Seq[Int] = Vector(2, 3, 5, 7, 11, 13)
 
-      assert(
-        primes ===
-          readXmlResponse[Seq[Int]](
-            writeXmlRequest[Seq[Int]]("getSum", Some(primes)).asResponse
-          ).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(primes)
     }
 
     it("should serialize and deserialize structs") {
       val bounds = Map("lowerBound" -> 18, "upperBound" -> 139)
 
-      assert(
-        bounds ===
-          readXmlResponse[Map[String, Int]](writeXmlRequest[Map[String, Int]]("setBounds", Some(bounds)).asResponse).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(bounds)
     }
 
     it("should deserialize a fault error from the server") {
@@ -95,73 +93,49 @@ class XmlrpcSpec extends FunSpec {
 
     it("should support the option type from the standard Scala library") {
       val option = Some("Hello world")
-
-      assert(
-        option ===
-          readXmlResponse[Option[String]](writeXmlRequest[Option[String]]("setPossibleGreeting", Some(option)).asResponse).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(option)
     }
 
     it("should support ISO8601 datetime serialization") {
       val currentDate = new Date()
-
-      assert(
-        withoutMillis(currentDate) ===
-          readXmlResponse[Date](writeXmlRequest[Date]("getSetDate", Some(currentDate)).asResponse).toOption.get
-      )
+      assertCanBeSerializedAndDeserialized(withoutMillis(currentDate))
     }
 
     it("should serialize and deserialize boolean") {
-      val message = true
-
-      assert(
-        true ===
-          readXmlResponse[Boolean](writeXmlRequest[Boolean]("sendBoolean", Some(message)).asResponse).toOption.get
-      )
+      val bool = true
+      assertCanBeSerializedAndDeserialized(bool)
     }
 
     it("should serialize and deserialize base64") {
       val encodedMessage = "eW91IGNhbid0IHJlYWQgdGhpcyE=".getBytes
-
-      assert(
-        encodedMessage ===
-          readXmlResponse[Array[Byte]](writeXmlRequest[Array[Byte]]("sendBoolean", Some(encodedMessage)).asResponse).toOption.get
-
-      )
+      assertCanBeSerializedAndDeserialized(encodedMessage)
     }
 
     it("should support <i4> xml tag inside a value") {
       val number = 14
 
-      assert(
-        number ===
-          readXmlResponse[Int](
-            <methodResponse>
-              <params>
-                <param>
-                  <value><i4>{number}</i4></value>
-                </param>
-              </params>
-            </methodResponse>
-          ).toOption.get
+      assertRequestIsRead(number,
+        <methodResponse>
+          <params>
+            <param>
+              <value><i4>{number}</i4></value>
+            </param>
+          </params>
+        </methodResponse>
       )
     }
 
     it("should support empty xml tag, representing a string, inside a value") {
-      val message = "Hello World!"
+      val greeting = "Hello World!"
 
-      val responseWithEmptyTag =
+      assertRequestIsRead(greeting,
         <methodResponse>
           <params>
             <param>
-              <value>{message}</value>
+              <value>{greeting}</value>
             </param>
           </params>
         </methodResponse>
-
-      assert(
-        message ===
-          readXmlResponse[String](responseWithEmptyTag).toOption.get
       )
     }
 
@@ -197,17 +171,14 @@ class XmlrpcSpec extends FunSpec {
     it("should detect special characters in <string> and encode/decode them") {
       val message = "George & Bernard have < than you"
 
-      assert(
-        message ===
-          readXmlResponse[String](
-            <methodResponse>
-              <params>
-                <param>
-                  <value><string>{"George &amp Bernard have &lt than you"}</string></value>
-                </param>
-              </params>
-            </methodResponse>
-          ).toOption.get
+      assertRequestIsRead(message,
+        <methodResponse>
+          <params>
+            <param>
+              <value><string>{"George &amp Bernard have &lt than you"}</string></value>
+            </param>
+          </params>
+        </methodResponse>
       )
     }
   }
