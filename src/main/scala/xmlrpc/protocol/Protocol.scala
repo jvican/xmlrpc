@@ -1,8 +1,9 @@
 package xmlrpc.protocol
 
-import xmlrpc.protocol.Deserializer.{Fault, Deserialized}
+import xmlrpc.protocol.Deserializer.{DeserializationError, Fault, Deserialized}
 
 import scala.language.{implicitConversions, postfixOps}
+import scala.util.Try
 import scala.xml.Utility.trim
 import scala.xml._
 import scalaz.Scalaz._
@@ -67,24 +68,26 @@ trait Protocol extends DatetimeSpec with Helpers {
         }
 
       case <methodResponse>{params}</methodResponse> if params.label == "params" =>
-        fromXmlrpc[T](params \ "param")
+        Try {
+          fromXmlrpc[T](params \ "param")
+        } recover { case t =>
+          DeserializationError(
+            "This is an unexpected error. It may be because the type of response is not the specified",
+            Some(t)
+          ).failureNel
+        } get
 
       case <error/> => s"methodResponse tag expected in $xml".toError.failureNel
 
       case _ => s"Body of response with params or fault couldn't be parsed. Expected methodResponse structure.\n$xml".toError.failureNel
     }
   
-  trait MethodParameters {
-    self: Product =>
-  }
-
-  def writeXmlRequest[P: Datatype](methodName: String, parameters: Option[P]): Node =
+  def writeXmlRequest[P: Datatype](methodName: String, parameter: P): Node =
       <methodCall>
         <methodName>{methodName}</methodName>
-        {if(parameters.isDefined)
-          <params>
-            { for { param <- toXmlrpc[P](parameters.get)} yield param.inParam }
-          </params>}
+        <params>
+          { for { param <- toXmlrpc[P](parameter)} yield param.inParam }
+        </params>
       </methodCall>
 }
 

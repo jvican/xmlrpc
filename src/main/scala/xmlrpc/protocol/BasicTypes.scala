@@ -5,7 +5,7 @@ import java.util.Date
 import xmlrpc.protocol.Deserializer.{DeserializationError, Deserialized}
 
 import scala.language.postfixOps
-import scala.xml.{Null, Node, NodeSeq}
+import scala.xml.{Node, NodeSeq}
 import scalaz.Scalaz._
 
 trait BasicTypes extends Protocol {
@@ -102,26 +102,29 @@ trait BasicTypes extends Protocol {
       }
     }
   }
-  
+
   object Void
-  
-  implicit object VoidXmlrpc extends Datatype[Void.type] {
-    override def serialize(value: Void.type): NodeSeq = NodeSeq.Empty
+  type Empty = Void.type
+
+  implicit object VoidXmlrpc extends Datatype[Empty] {
+    override def serialize(value: Empty): NodeSeq = NodeSeq.Empty
 
     // If there is no param tag, then it is a void
-    override def deserialize(from: NodeSeq): Deserialized[Void.type] =
+    override def deserialize(from: NodeSeq): Deserialized[Empty] =
       from \\ "param" headOption match {
         case Some(_) => s"Expected void (without any param tag) in $from".toError.failureNel
         case _ => Void.success
       }
   }
 
-  implicit object NilXmlrpc extends Datatype[Null.type] {
-    override def serialize(value: Null.type): Node = <nil/>.inValue
+  type Null = scala.xml.Null.type
 
-    override def deserialize(from: NodeSeq): Deserialized[Null.type] =
+  implicit object NilXmlrpc extends Datatype[Null] {
+    override def serialize(value: Null): Node = <nil/>.inValue
+
+    override def deserialize(from: NodeSeq): Deserialized[Null] =
       from \\ "value" headOption match {
-        case Some(<value><nil/></value>) => Null.success
+        case Some(<value><nil/></value>) => scala.xml.Null.success
         case _ => s"Expected nil structure in $from".toError.failureNel
       }
   }

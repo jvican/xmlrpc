@@ -20,13 +20,17 @@ case class XmlrpcResponse[R](underlying: Future[Deserialized[R]])(implicit ec: E
     handleErrors map (_ fold (failure, success))
 
   private lazy val handleErrors: Future[Deserialized[R]] = underlying recover {
-    case error: Throwable => ConnectionError.from("Error when processing the future response", error).failureNel
+    case error: Throwable => ConnectionError("Error when processing the future response", Some(error)).failureNel
   }
 }
 
 object XmlrpcResponse {
   def apply[R](value: R)(implicit ec: ExecutionContext): XmlrpcResponse[R] = XmlrpcResponse[R] {
     Future.successful(value.success)
+  }
+
+  def apply[R](value: Deserialized[R])(implicit ec: ExecutionContext): XmlrpcResponse[R] = XmlrpcResponse[R] {
+    Future.successful(value)
   }
 
   implicit class SprayToXmlrpcResponse(underlying: Future[NodeSeq])(implicit ec: ExecutionContext) {

@@ -14,7 +14,7 @@ class XmlrpcSpec extends FunSpec {
 
   def assertCanBeSerializedAndDeserialized[T: Datatype](value: T): Unit = {
     assertResult(value) {
-      readXmlResponse[T](writeXmlRequest[T]("testMethod", Some(value)).asResponse).toOption.get
+      readXmlResponse[T](writeXmlRequest[T]("testMethod", value).asResponse).toOption.get
     }
   }
 
@@ -38,7 +38,7 @@ class XmlrpcSpec extends FunSpec {
 
       assert(
         request ===
-          writeXmlRequest[Int]("examples.getStateName", Some(41))
+          writeXmlRequest[Int]("examples.getStateName", 41)
       )
     }
 
@@ -92,8 +92,13 @@ class XmlrpcSpec extends FunSpec {
       )
     }
 
-    it("should support the option type from the standard Scala library") {
+    it("should serialize and deserialize Some (Option)") {
       val option = Some("Hello world")
+      assertCanBeSerializedAndDeserialized(option)
+    }
+
+    it("should serialize and deserialize None (Option)") {
+      val option = None
       assertCanBeSerializedAndDeserialized(option)
     }
 
@@ -112,7 +117,12 @@ class XmlrpcSpec extends FunSpec {
       assertCanBeSerializedAndDeserialized(encodedMessage)
     }
 
-    it("should support <i4> xml tag inside a value") {
+    it("should serialize and deserialize int") {
+      val number = 41
+      assertCanBeSerializedAndDeserialized(number)
+    }
+
+    it("should detect <i4> xml tag inside a value as a integer") {
       val number = 14
 
       assertResponseIsRead(number,
@@ -124,6 +134,11 @@ class XmlrpcSpec extends FunSpec {
           </params>
         </methodResponse>
       )
+    }
+
+    it("should serialize and deserialize double") {
+      val double = 41.0
+      assertCanBeSerializedAndDeserialized(double)
     }
 
     it("should support empty xml tag, representing a string, inside a value") {
@@ -143,7 +158,7 @@ class XmlrpcSpec extends FunSpec {
     it("should support void methodResponses") {
       assert(
         Void ===
-          readXmlResponse[Void.type](
+          readXmlResponse[Empty](
             <methodResponse>
               <params>
               </params>
@@ -153,11 +168,11 @@ class XmlrpcSpec extends FunSpec {
     }
 
     it("should support null represented with <nil/>") {
-      import scala.xml.Null
+      import XmlrpcProtocol.Null
 
       assert(
-        Null ===
-          readXmlResponse[Null.type](
+        scala.xml.Null ===
+          readXmlResponse[Null](
             <methodResponse>
               <params>
                 <param>
@@ -181,6 +196,35 @@ class XmlrpcSpec extends FunSpec {
           </params>
         </methodResponse>
       )
+    }
+  }
+
+  it("should not throw an exception when expecting a different response type") {
+    val inEnglish = "Hello world!"
+    val inSpanish = "Hola mundo!"
+    val inGerman = "Hallo welt!"
+
+    case class Greeting(english: String, spanish: String, german: String)
+
+    try {
+      readXmlResponse[Greeting](
+        // This is an array
+        <methodResponse>
+          <params>
+            <param>
+              <array>
+                <data>
+                  <value>{inEnglish}</value>
+                  <value>{inSpanish}</value>
+                  <value>{inGerman}</value>
+                </data>
+              </array>
+            </param>
+          </params>
+        </methodResponse>
+      )
+    } catch {
+      case _: Throwable => fail("Should not produce an exception")
     }
   }
 }

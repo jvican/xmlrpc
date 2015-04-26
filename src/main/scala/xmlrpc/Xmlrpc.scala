@@ -9,6 +9,7 @@ import xmlrpc.protocol.{Datatype, XmlrpcProtocol}
 
 import scala.concurrent.ExecutionContext
 import scala.xml.NodeSeq
+import scalaz.Scalaz._
 
 /**
  * This is the client api to connect to the Xmlrpc server. A client can send any request
@@ -26,19 +27,13 @@ object Xmlrpc {
     def uri: Uri = Uri(fullAddress)
   }
 
-  def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: P)(implicit xmlrpcServer: Uri,
-                                                                            rf: ActorRefFactory,
-                                                                            ec: ExecutionContext,
-                                                                            fc: Timeout): XmlrpcResponse[R] =
-    invokeMethod(name, Some(parameters))
-
-  def invokeMethod[P: Datatype, R: Datatype](name: String, parameters: Option[P] = None)
-                                              (implicit xmlrpcServer: Uri,
+  def invokeMethod[P: Datatype, R: Datatype](name: String, parameter: P = Void)
+                                              (implicit xmlrpcServer: XmlrpcServer,
                                                rf: ActorRefFactory,
                                                ec: ExecutionContext,
                                                fc: Timeout): XmlrpcResponse[R] = {
 
-    val request: NodeSeq = writeXmlRequest(name, parameters)
+    val request: NodeSeq = writeXmlRequest(name, parameter)
 
     import XmlrpcResponse.SprayToXmlrpcResponse
     import spray.httpx.unmarshalling.BasicUnmarshallers.NodeSeqUnmarshaller
@@ -49,6 +44,10 @@ object Xmlrpc {
       * to a String and then the standard xml header is added */
     val requestWithHeader: String = """<?xml version="1.0"?>""" + request.toString
 
-    pipeline(Post(xmlrpcServer, HttpEntity(`text/xml`, requestWithHeader))).asXmlrpcResponse[R]
+    try {
+      pipeline(Post(xmlrpcServer.uri, HttpEntity(`text/xml`, requestWithHeader))).asXmlrpcResponse[R]
+    } catch {
+      case t: Throwable => XmlrpcResponse(ConnectionError("An exception has been thrown by Spray", Some(t)).failureNel)
+    }
   }
 }

@@ -16,10 +16,8 @@ trait DatetimeSpec {
   ISO8601Format.setTimeZone(serverTimezone)
   ISO8601Format.setLenient(false)
 
-
   def withoutMillis(date: Date): Date = {
     val dateTime = date.getTime
     new Date(dateTime - (dateTime % 1000))
   }
-
 }
