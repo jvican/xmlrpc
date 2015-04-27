@@ -20,13 +20,14 @@ This project is only compatible with Scala __2.11__+.
   
 In order to add it to your project, write the following in your build.sbt:
 ```scala
-libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.0")
+libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.0.1")
 ```
 
 # What does this solve?
 It solves the problem of serializing and deserializing types in a fancy way. Moreover, it does so simpler than other libraries, using the power of _type classes_ and _implicits_. This technique was proposed by _David McIver_ in [sbinary](https://github.com/harrah/sbinary) and it's very powerful, being used broadly in json and xml libraries.
 
 # Usage
+## Serializing and Deserializing
 A tiny example using _case classes_. _Tuples_, _Option[T]_ and roughly any standard type can be used to read and write XML-RPC messages (if not, please let me know). This example only shows the serialization and deserialization but not the use of __invokeMethod__, the main method of the library to connect to any server, that can be used importing __xmlrpc.Xmlrpc__ (usage example in the future).
 ```scala
 import xmlrpc.protocol.XmlrpcProtocol._
@@ -53,6 +54,27 @@ readXmlResponse[Confirmation](<methodResponse>
   </params>
 </methodResponse>)
 ```
+
+## Connecting to the server
+First, import the library:
+```scala
+import xmlrpc.protocol.XmlrpcProtocol._
+import xmlrpc.Xmlrpc._
+```
+  
+If you don't have an Actor System in scope or you don't have an environment created for Spray, you must set it up:
+```scala
+implicit val system = ActorSystem()
+implicit val timeout = Timeout(5 seconds)
+import system.dispatcher
+```
+  
+Now, we set up the XML-RPC server and invoke any method:
+```scala
+implicit val testServer = XmlrpcServer("http://betty.userland.com/RPC2")
+val response: XmlrpcResponse[Int] = invokeMethod[String, Int]("methodName", "Hello World!")
+```  
+You don't have to explicit the type of the response. If you want to have a __Future[Int]__, you can access the attribute _underlying_ of the response. __XmlrpcResponse__ is a wrapper useful when we want to invoke several methods, because it allow us to use for-comprehensions and chain them.
 
 # Issues
 At this moment, it's not possible to serialize and deserialize __Seq[Any]__. For example, you cannot serialize `List("a", 1)`. In case you need this, it's better to use case classes if the appearances of these types are cyclic, e.g. `List("a", 1, "a", 1)`. When I have more time, I would include this functionality in the library.
