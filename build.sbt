@@ -27,11 +27,9 @@ libraryDependencies ++= {
   Seq(
     "org.scalaz"        %% "scalaz-core"    % scalazVersion,
     "io.spray"          %% "spray-http"     % sprayVersion,
-    "io.spray"          %% "spray-httpx"    % sprayVersion,
     "io.spray"          %% "spray-can"      % sprayVersion,
-    "io.spray"          %% "spray-util"     % sprayVersion,
     "io.spray"          %% "spray-client"   % sprayVersion,
-    "com.typesafe.akka" %%  "akka-actor"    % akkaVersion,
+    "com.typesafe.akka" %% "akka-actor"     % akkaVersion,
     "org.scalatest"     %% "scalatest"      % scalaTestVersion    % "test",
     "com.chuusai"       %% "shapeless"      % shapelessVersion
   )

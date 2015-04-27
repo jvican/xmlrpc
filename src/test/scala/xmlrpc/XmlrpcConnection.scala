@@ -8,6 +8,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import xmlrpc.protocol.XmlrpcProtocol
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scalaz.{Success, Failure}
 
 class XmlrpcConnection extends FunSpec with ScalaFutures {
