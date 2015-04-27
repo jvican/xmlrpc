@@ -28,7 +28,7 @@ It solves the problem of serializing and deserializing types in a fancy way. Mor
 
 # Usage
 ## Serializing and Deserializing
-A tiny example using _case classes_. _Tuples_, _Option[T]_ and roughly any standard type can be used to read and write XML-RPC messages (if not, please let me know). This example only shows the serialization and deserialization but not the use of __invokeMethod__, the main method of the library to connect to any server, that can be used importing __xmlrpc.Xmlrpc__ (usage example in the future).
+A tiny example using _case classes_. _Tuples_, _Option[T]_ and roughly any standard type can be used to read and write XML-RPC messages (if you want for some type in particular, please let me know). This example only shows the serialization and deserialization but not the use of __invokeMethod__. If you are implementing a server, you may use only this feature to reply the client.
 ```scala
 import xmlrpc.protocol.XmlrpcProtocol._
 
