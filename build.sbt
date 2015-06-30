@@ -1,12 +1,8 @@
-import SonatypeKeys._
-
-sonatypeSettings
-
-name := "Xmlrpc"
+name := "xmlrpc"
 
 version := "1.1"
 
-profileName := "jvican"
+description := "Module that gives full compatibility with XML-RPC for Scala"
 
 organization := "com.github.jvican"
 

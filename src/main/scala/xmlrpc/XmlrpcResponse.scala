@@ -41,7 +41,7 @@ object XmlrpcResponse {
 
   implicit class WithRetry[R](f: () => XmlrpcResponse[R])(implicit ec: ExecutionContext) {
     /**
-     * This method runs the function until a success has been detected for `n` times
+     * These methods runs the function until a success has been detected for `n` times
      * 
      * @param runSuccess executed once at least, to return the successful `XmlrpcResponse`
      * @param runFailure executed if the response has failed, at most `n` times
@@ -49,12 +49,23 @@ object XmlrpcResponse {
      * @tparam S type of output
      * @return successful `XmlrpcResponse[S]`
      */
-    def retry[S](runSuccess: R => S, runFailure: AnyErrors => S, times: Int): XmlrpcResponse[S] = {
+    def retry[S](runFailure: AnyErrors => S, runSuccess: R => S, times: Int): XmlrpcResponse[S] = {
       def failureLogic(errors: AnyErrors, remaining: Int): XmlrpcResponse[S] =
         if(remaining == 0) XmlrpcResponse(runFailure(errors))
-        else retry(runSuccess, runFailure, remaining - 1)
+        else retry(runFailure, runSuccess, remaining - 1)
 
       def run(remaining: Int): XmlrpcResponse[S] = f() fold (failureLogic(_, remaining), runSuccess)
+
+      if(times <= 0) throw new IllegalArgumentException("Retry must be executed at least one time.")
+      else run(times)
+    }
+
+    def retry(times: Int): XmlrpcResponse[R] = {
+      def failureLogic(errors: AnyErrors, remaining: Int): XmlrpcResponse[R] =
+        if(remaining == 0) XmlrpcResponse(errors.asFutureFailure)
+        else retry(remaining - 1)
+
+      def run(remaining: Int): XmlrpcResponse[R] = f() fold (failureLogic(_, remaining), r => r)
 
       if(times <= 0) throw new IllegalArgumentException("Retry must be executed at least one time.")
       else run(times)
