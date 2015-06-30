@@ -2,6 +2,7 @@ package xmlrpc.protocol
 
 import xmlrpc.protocol.Deserializer.{DeserializationError, Fault, Deserialized}
 
+import scala.concurrent.Future
 import scala.language.{implicitConversions, postfixOps}
 import scala.util.Try
 import scala.xml.Utility.trim

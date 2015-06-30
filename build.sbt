@@ -4,7 +4,7 @@ sonatypeSettings
 
 name := "Xmlrpc"
 
-version := "1.0.1"
+version := "1.1"
 
 profileName := "jvican"
 
@@ -22,7 +22,7 @@ libraryDependencies ++= {
   val akkaVersion = "2.3.9"
   val sprayVersion = "1.3.3"
   val scalaTestVersion = "2.2.4"
-  val shapelessVersion = "2.2.0-RC4"
+  val shapelessVersion = "2.2.3"
 
   Seq(
     "org.scalaz"        %% "scalaz-core"    % scalazVersion,
