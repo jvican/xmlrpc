@@ -14,7 +14,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val scalazVersion = "7.1.1"
+  val scalazVersion = "7.1.3"
   val akkaVersion = "2.3.9"
   val sprayVersion = "1.3.3"
   val scalaTestVersion = "2.2.4"
