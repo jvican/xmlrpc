@@ -1,26 +1,29 @@
 package xmlrpc
 
-import akka.actor.ActorRefFactory
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding._
+import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling.{FromResponseUnmarshaller, Unmarshal}
+import akka.stream.Materializer
 import akka.util.Timeout
-import spray.client.pipelining._
-import spray.http.MediaTypes._
-import spray.http.{HttpEntity, Uri}
-import xmlrpc.protocol.{Datatype, XmlrpcProtocol}
+import xmlrpc.protocol._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
-import scalaz.Scalaz._
 
 /**
- * This is the client api to connect to the Xmlrpc server. A client can send any request
- * and he will receive a response. A request is a method call and a response is the result of
- * that method in the server or a fault.
- *
- * The configuration of the Server is a Uri, make sure you have this implicit in context
- * before calling invokeMethod.
- *
- */
+  * This is the client api to connect to the Xmlrpc server. A client can send any request
+  * and he will receive a response. A request is a method call and a response is the result of
+  * that method in the server or a fault.
+  *
+  * The configuration of the Server is a Uri, make sure you have this implicit in context
+  * before calling invokeMethod.
+  *
+  */
 object Xmlrpc {
+
   import XmlrpcProtocol._
 
   case class XmlrpcServer(fullAddress: String) {
@@ -28,26 +31,26 @@ object Xmlrpc {
   }
 
   def invokeMethod[P: Datatype, R: Datatype](name: String, parameter: P = Void)
-                                              (implicit xmlrpcServer: XmlrpcServer,
-                                               rf: ActorRefFactory,
-                                               ec: ExecutionContext,
-                                               fc: Timeout): XmlrpcResponse[R] = {
+                                            (implicit xmlrpcServer: XmlrpcServer,
+                                             as: ActorSystem,
+                                             ma: Materializer,
+                                             ec: ExecutionContext,
+                                             fc: Timeout): XmlrpcResponse[R] = {
+
+    import XmlrpcResponse.AkkaHttpToXmlrpcResponse
+
+    def unmarshall[A](f: Future[HttpResponse])(implicit um: FromResponseUnmarshaller[A]): Future[A] =
+      f.flatMap(Unmarshal(_).to[A])
+
 
     val request: NodeSeq = writeXmlRequest(name, parameter)
-
-    import XmlrpcResponse.SprayToXmlrpcResponse
-    import spray.httpx.unmarshalling.BasicUnmarshallers.NodeSeqUnmarshaller
-
-    val pipeline = sendReceive ~> unmarshal[NodeSeq]
-
-    /** As scala-xml doesn't support xml tags (it is a reserved keyword), xml is converted
-      * to a String and then the standard xml header is added */
     val requestWithHeader: String = """<?xml version="1.0"?>""" + request.toString
 
+
     try {
-      pipeline(Post(xmlrpcServer.uri, HttpEntity(`text/xml`, requestWithHeader))).asXmlrpcResponse[R]
+      (Http().singleRequest(Post(xmlrpcServer.uri, request)) ~> unmarshall[NodeSeq]).asXmlrpcResponse[R]
     } catch {
-      case t: Throwable => XmlrpcResponse(ConnectionError("An exception has been thrown by Spray", Some(t)).failureNel)
+      case t: Throwable => XmlrpcResponse(ConnectionError("An exception has been thrown by Spray", Some(t)).failures)
     }
   }
 }

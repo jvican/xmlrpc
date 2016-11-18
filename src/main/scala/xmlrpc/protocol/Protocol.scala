@@ -38,6 +38,10 @@ object Deserializer {
   implicit class StringToError(reason: String) {
     val toError: DeserializationError = DeserializationError(reason)
   }
+
+  implicit class ToFailures(e: AnyError) extends AnyRef {
+    def failures[A] = Validation.failureNel[AnyError, A](e)
+  }
 }
 
 trait Serializer[T] {
@@ -63,9 +67,9 @@ trait Protocol extends DatetimeSpec with Helpers {
       case <methodResponse>{fault}</methodResponse> if fault.label == "fault" =>
         (fault \\ "int" headOption, fault \\ "string" headOption) match {
           case (Some(intValue), Some(stringValue)) =>
-            Fault(intValue.text.toInt, stringValue.text).failureNel
+            Fault(intValue.text.toInt, stringValue.text).failures
 
-          case _ => s"fault structure with faultCode and faultString not found".toError.failureNel
+          case _ => s"fault structure with faultCode and faultString not found".toError.failures
         }
 
       case <methodResponse>{params}</methodResponse> if params.label == "params" =>
@@ -75,12 +79,12 @@ trait Protocol extends DatetimeSpec with Helpers {
           DeserializationError(
             "This is an unexpected error. It may be because the type of response is not the specified",
             Some(t)
-          ).failureNel
+          ).failures
         } get
 
-      case <error/> => s"methodResponse tag expected in $xml".toError.failureNel
+      case <error/> => s"methodResponse tag expected in $xml".toError.failures
 
-      case _ => s"Body of response with params or fault couldn't be parsed. Expected methodResponse structure.\n$xml".toError.failureNel
+      case _ => s"Body of response with params or fault couldn't be parsed. Expected methodResponse structure.\n$xml".toError.failures
     }
   
   def writeXmlRequest[P: Datatype](methodName: String, parameter: P): Node =

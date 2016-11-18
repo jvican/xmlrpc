@@ -21,7 +21,7 @@ trait CollectionTypes extends Protocol {
           (for { value <- array}
             yield fromXmlrpc[T](value)).toList.sequence[Deserialized, T]
 
-        case _ => "Expected array structure in $from".toError.failureNel
+        case _ => "Expected array structure in $from".toError.failures
       }
   }
 
@@ -46,7 +46,7 @@ trait CollectionTypes extends Protocol {
             .sequence[Deserialized, (String, T)]
             .map(_.toMap[String, T])
 
-        case _ => s"Expected struct in:\n$from".toError.failureNel
+        case _ => s"Expected struct in:\n$from".toError.failures
       }
   }
 }

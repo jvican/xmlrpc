@@ -33,6 +33,6 @@ trait Helpers {
     Try(f(input)) match {
       case Success(convertedValue) => convertedValue.success
       case Failure(e) =>
-        DeserializationError(s"The value $input couldn't be converted to a ${implicitly[ClassTag[T]].runtimeClass.getSimpleName}", Some(e)).failureNel
+        DeserializationError(s"The value $input couldn't be converted to a ${implicitly[ClassTag[T]].runtimeClass.getSimpleName}", Some(e)).failures
     }
 }

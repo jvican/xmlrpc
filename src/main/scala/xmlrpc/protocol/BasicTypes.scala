@@ -22,7 +22,7 @@ trait BasicTypes extends Protocol {
     override def deserialize(from: NodeSeq): Deserialized[Array[Byte]] =
       from \\ "value" headOption match {
         case Some(<value><base64>{content}</base64></value>) => content.text.getBytes.success
-        case _ => s"Expected base64 structure in $from".toError.failureNel
+        case _ => s"Expected base64 structure in $from".toError.failures
       }
   }
 
@@ -35,9 +35,9 @@ trait BasicTypes extends Protocol {
           try {
             ISO8601Format.parse(date.text).success
           } catch {
-            case e: Exception => DeserializationError(s"The date ${from.text} has not been parsed correctly", Some(e)).failureNel
+            case e: Exception => DeserializationError(s"The date ${from.text} has not been parsed correctly", Some(e)).failures
           }
-        case _ => s"Expected datetime structure in $from".toError.failureNel
+        case _ => s"Expected datetime structure in $from".toError.failures
       }
   }
 
@@ -49,7 +49,7 @@ trait BasicTypes extends Protocol {
         case Some(<value><double>{double}</double></value>) =>
           makeNumericConversion(_.toDouble, double.text)
 
-        case _ => "Expected double structure in $from".toError.failureNel
+        case _ => "Expected double structure in $from".toError.failures
       }
   }
 
@@ -64,7 +64,7 @@ trait BasicTypes extends Protocol {
         case Some(<value><i4>{integer}</i4></value>) =>
           makeNumericConversion(_.toInt, integer.text)
 
-        case _ => s"Expected int structure in $from".toError.failureNel
+        case _ => s"Expected int structure in $from".toError.failures
       }
   }
 
@@ -77,9 +77,9 @@ trait BasicTypes extends Protocol {
           logicalValue.text match {
             case "1" => true.success
             case "0" => false.success
-            case _ => "No logical value in boolean structure".toError.failureNel
+            case _ => "No logical value in boolean structure".toError.failures
           }
-        case _ => s"Expected boolean structure in $from".toError.failureNel
+        case _ => s"Expected boolean structure in $from".toError.failures
       }
   }
 
@@ -98,7 +98,7 @@ trait BasicTypes extends Protocol {
       from \\ "value" headOption match {
         case Some(<value><string>{content}</string></value>) => decodeSpecialCharacters(content.text).success
         case Some(<value>{content}</value>) => decodeSpecialCharacters(content.text).success
-        case _ => s"Expected string structure in $from".toError.failureNel
+        case _ => s"Expected string structure in $from".toError.failures
       }
     }
   }
@@ -112,7 +112,7 @@ trait BasicTypes extends Protocol {
     // If there is no param tag, then it is a void
     override def deserialize(from: NodeSeq): Deserialized[Empty] =
       from \\ "param" headOption match {
-        case Some(_) => s"Expected void (without any param tag) in $from".toError.failureNel
+        case Some(_) => s"Expected void (without any param tag) in $from".toError.failures
         case _ => Void.success
       }
   }
@@ -125,7 +125,7 @@ trait BasicTypes extends Protocol {
     override def deserialize(from: NodeSeq): Deserialized[Null] =
       from \\ "value" headOption match {
         case Some(<value><nil/></value>) => scala.xml.Null.success
-        case _ => s"Expected nil structure in $from".toError.failureNel
+        case _ => s"Expected nil structure in $from".toError.failures
       }
   }
 }

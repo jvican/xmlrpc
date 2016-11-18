@@ -24,7 +24,7 @@ case class XmlrpcResponse[R](underlying: Future[Deserialized[R]])(implicit ec: E
     }
 
   private lazy val handleErrors: Future[Deserialized[R]] = underlying recover {
-    case error: Throwable => ConnectionError("Error when processing the future response", Some(error)).failureNel
+    case error: Throwable => ConnectionError("Error when processing the future response", Some(error)).failures
   }
 }
 
@@ -35,7 +35,7 @@ object XmlrpcResponse {
     Future.successful(value)
   }
 
-  implicit class SprayToXmlrpcResponse(underlying: Future[NodeSeq])(implicit ec: ExecutionContext) {
+  implicit class AkkaHttpToXmlrpcResponse(underlying: Future[NodeSeq])(implicit ec: ExecutionContext) {
     def asXmlrpcResponse[R: Datatype]: XmlrpcResponse[R] = XmlrpcResponse[R](underlying map readXmlResponse[R])
   }
 
