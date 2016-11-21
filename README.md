@@ -65,6 +65,7 @@ import xmlrpc.Xmlrpc._
 If you don't have an Actor System in scope or you don't have an environment created for Spray, you must set it up:
 ```scala
 implicit val system = ActorSystem()
+implicit val ma = ActorMaterializer()
 implicit val timeout = Timeout(5 seconds)
 import system.dispatcher
 ```

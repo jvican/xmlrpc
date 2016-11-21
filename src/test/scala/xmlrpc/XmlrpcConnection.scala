@@ -1,6 +1,7 @@
 package xmlrpc
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
@@ -24,6 +25,7 @@ class XmlrpcConnection extends FunSpec with ScalaFutures {
 
   // Spray setup
   implicit val system = ActorSystem()
+  implicit val ma = ActorMaterializer()
   implicit val timeout = Timeout(5 seconds)
   import system.dispatcher
 
