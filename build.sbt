@@ -6,9 +6,9 @@ description := "Module that gives full compatibility with XML-RPC for Scala"
 
 organization := "com.github.jvican"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.1"
 
-crossScalaVersions := Seq("2.11.8", "2.12.0")
+crossScalaVersions := Seq("2.11.8", "2.12.1")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
@@ -16,8 +16,8 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val scalazVersion = "7.2.7"
-  val akkaHttp = "10.0.0-RC2"
+  val scalazVersion = "7.2.8"
+  val akkaHttp = "10.0.1"
   val scalaTestVersion = "3.0.1"
   val shapelessVersion = "2.3.2"
 
