@@ -9,14 +9,14 @@ Chances are, that if you are reading this, you already know what XML-RPC is. But
 Despite that more powerful and modern rpc protocols are used nowadays, I have written this to support connection to older servers.
 
 # Dependencies
-This library uses [Spray](https://github.com/spray/spray) to connect to any HTTP server. It would be easy to change that if one wants to use another library like [Dispatch](https://github.com/dispatch/dispatch). You are free to fork this project and make the necesssary changes in _Xmlrpc.scala_, located in the main package. 
+This library uses [Akka HTTP](http://doc.akka.io/docs/akka-http/current/index.html) to connect to any HTTP server. It would be easy to change that if one wants to use another library like [Dispatch](https://github.com/dispatch/dispatch). You are free to fork this project and make the necesssary changes in _Xmlrpc.scala_, located in the main package. 
   
 Thanks to Scalaz, it offers good feedback in case of any failure with the help of __Validation[T]__. Validation is _applicative_, this means that all the errors in the process of deserialization will be accumulated.
 
 Using [Shapeless](https://github.com/milessabin/shapeless), we solve the problem of writing boilerplate code for any arity of case classes and tuples. If you are more interested in a library for serialization using Shapeless, you can check [PicoPickle](https://github.com/netvl/picopickle), an extensible, more powerful library entirely written in Shapeless.
 
 # Import to your project
-This project is only compatible with Scala __2.11__+.
+This project is compatible with Scala 2.11 and 2.12.
   
 In order to add it to your project, write the following in your build.sbt:
 ```scala
@@ -62,7 +62,7 @@ import xmlrpc.protocol.XmlrpcProtocol._
 import xmlrpc.Xmlrpc._
 ```
   
-If you don't have an Actor System in scope or you don't have an environment created for Spray, you must set it up:
+If you don't have an Actor System in scope or you don't have an environment created for Akka HTTP, you must set it up:
 ```scala
 implicit val system = ActorSystem()
 implicit val ma = ActorMaterializer()
