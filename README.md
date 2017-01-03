@@ -20,7 +20,7 @@ This project is compatible with Scala 2.11 and 2.12.
   
 In order to add it to your project, write the following in your build.sbt:
 ```scala
-libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.0.1")
+libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.2")
 ```
 
 # What does this solve?
