@@ -1,6 +1,6 @@
 name := "xmlrpc"
 
-version := "1.2-SNAPSHOT"
+version := "1.2.2-SNAPSHOT"
 
 description := "Module that gives full compatibility with XML-RPC for Scala"
 
