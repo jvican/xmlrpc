@@ -17,7 +17,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= {
   val scalazVersion = "7.2.8"
-  val akkaHttp = "10.0.1"
+  val akkaHttp = "10.0.2"
   val scalaTestVersion = "3.0.1"
   val shapelessVersion = "2.3.2"
 
