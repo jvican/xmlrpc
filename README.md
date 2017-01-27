@@ -16,11 +16,11 @@ Thanks to Scalaz, it offers good feedback in case of any failure with the help o
 Using [Shapeless](https://github.com/milessabin/shapeless), we solve the problem of writing boilerplate code for any arity of case classes and tuples. If you are more interested in a library for serialization using Shapeless, you can check [PicoPickle](https://github.com/netvl/picopickle), an extensible, more powerful library entirely written in Shapeless.
 
 # Import to your project
-This project is compatible with Scala 2.11 and 2.12.
+This project cross-compiles to Scala 2.11 and 2.12.
   
 In order to add it to your project, write the following in your build.sbt:
 ```scala
-libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.2")
+libraryDependencies ++= Seq("com.github.jvican" %% "xmlrpc" % "1.2.1")
 ```
 
 # What does this solve?
