@@ -13,7 +13,7 @@ trait CollectionTypes extends Protocol {
   // types, we deserialize it with case classes
   implicit def ArrayXmlrpc[T: Datatype]: Datatype[Seq[T]] = new Datatype[Seq[T]] {
     override def serialize(value: Seq[T]): Node =
-      <array><data>{for {elem <- value} yield toXmlrpc(elem)}</data></array>
+      <array><data>{for {elem <- value} yield toXmlrpc(elem)}</data></array>.inValue
 
     override def deserialize(from: NodeSeq): Deserialized[Seq[T]] =
       from \\ "array" headOption match {
@@ -34,7 +34,7 @@ trait CollectionTypes extends Protocol {
         (key, value) <- map
       } yield inMember(inName(key) ++ toXmlrpc(value))).reduce(_ ++ _)
 
-      <struct>{struct}</struct>
+      <struct>{struct}</struct>.inValue
     }
 
     override def deserialize(from: NodeSeq): Deserialized[Map[String, T]] =
