@@ -3,8 +3,9 @@ package xmlrpc.protocol
 import java.util.Date
 
 import xmlrpc.protocol.Deserializer.{DeserializationError, Deserialized}
-
 import scala.language.postfixOps
+
+import java.time.{LocalDateTime, ZoneId, ZoneOffset}
 import scala.xml.{Node, NodeSeq}
 import scalaz.Scalaz._
 
@@ -27,13 +28,18 @@ trait BasicTypes extends Protocol {
   }
 
   implicit object DatetimeXmlrpc extends Datatype[Date] {
-    override def serialize(value: Date): Node = <dateTime.iso8601>{ISO8601Format.format(value)}</dateTime.iso8601>.inValue
+    override def serialize(value: Date): Node = {
+      val localDate = value.toInstant.atZone(serverTimezone).toLocalDateTime
+      <dateTime.iso8601>{ISO8601Format.format(localDate)}</dateTime.iso8601>.inValue
+    }
 
     override def deserialize(from: NodeSeq): Deserialized[Date] =
       from \\ "value" headOption match {
         case Some(<value><dateTime.iso8601>{date}</dateTime.iso8601></value>) =>
           try {
-            ISO8601Format.parse(date.text).success
+            val localDateTime = LocalDateTime.parse(date.text, ISO8601Format)
+            val d = Date.from(localDateTime.atZone(serverTimezone).toInstant)
+            d.success
           } catch {
             case e: Exception => DeserializationError(s"The date ${from.text} has not been parsed correctly", Some(e)).failures
           }
